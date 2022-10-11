@@ -1,0 +1,52 @@
+ABCDEFG
+1234567
+
+
+
+AABDEF
+112456
+
+1[1+1]
+12[2+2]
+124[4+4]
+1248[8+5]
+1248 13
+1248 13 [13+6]
+1248 13 19
+ABDHMS
+
+Javascript:
+	function Encode(Input) {
+		Input = Input.toUpperCase().replaceAll(' ', '@');
+		let Output = "",
+			LastValue = 0;
+		for (let i = 0; i < Input.length; i++) {
+			LastValue += (Input.charCodeAt(i) - 64);
+			while (LastValue > 26) {
+				LastValue -= 27;
+			}
+			Output += String.fromCharCode(LastValue + 64);
+		}
+		return Output;
+	}
+	function Decode(Input) {
+		let Output = "",
+			LastValues = [0, 0];
+		for (let i = 0; i < Input.length; i++) {
+			LastValues[1] = (Input.charCodeAt(i) - 64);
+			while (LastValues[0] > LastValues[1]) {
+				LastValues[1] += 27;
+			}
+			Output += String.fromCharCode((LastValues[1] - LastValues[0]) + 64);
+			LastValues[0] = LastValues[1];
+		}
+		return Output.replaceAll('@', ' ');
+	}
+	let Encoded = Encode("Test Message aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+	console.log(Encoded);
+	console.log(Decode(Encoded));
+	
+	
+
+TEST MESSAGE AAAAAAAAAAAAAAA
+TYQJJWATLMTYYZ@ABCDEFGHIJKLM

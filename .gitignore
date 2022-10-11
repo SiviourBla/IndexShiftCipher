@@ -1,0 +1,7 @@
+# Custom DOSBox scripts
+BIN/
+START.BAT
+
+# MacOS
+.DS_Store
+._*
