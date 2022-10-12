@@ -1,6 +1,8 @@
 # Custom DOSBox scripts
 BIN/
 START.BAT
+SRC/CIPHER.OBJ
+SRC/CIPHER.EXE
 
 # MacOS
 .DS_Store
