@@ -36,7 +36,7 @@ MAIN PROC
 		LEA DX, ModePrompt_ ; Configure offset
 		INT 21H
 		
-		MOV AH, 8 ; Configure to take char input
+		MOV AH, 1 ; Configure to take char input
 		INT 21H ; Output -> AL
 		
 		CMP AL, 'E' ; if (AL == 'E') --> PM_Encode
