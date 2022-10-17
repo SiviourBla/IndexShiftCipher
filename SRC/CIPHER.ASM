@@ -13,6 +13,7 @@ InputPrompt_ DB "Input: $"
 Input_ DB 51,0,52 dup("$") ; Init input variable with max size of 50
 InputValue_ DB 0 ; Stores current character's value
 InputValueLast_ DB 0 ; Stores last character's value
+DecodeInvalidError_ DB "Failed: invalid characters were present!$"
 
 
 .CODE
@@ -149,6 +150,86 @@ MAIN PROC
 		JMP Exit
 	
 	Main_Decode:
+		MOV AH, 9 ; Configure to display string
+		LEA DX, Input_+2 ; Configure offset
+		INT 21H
+		
+		CALL Print_NewLine
+		
+		MOV DL, Input_[1]
+		MOV CX, DL ; CX = Number of loops
+		MOV BX, 2 ; Set BX to 2 (the actual beginning)
+		
+		MOV DH, 0 ; Stores last character's value
+		
+		DecodeLoop:
+			MOV DL, Input_[BX] ; Get current char
+			MOV InputValue_, DL ; Update current value to eliminate any risks associated with DL getting overwritten
+			
+			; Not enough room to keep this inside the loop
+			; CMP InputValue_, ' ' ; Replace space with '@'
+			; JNZ Decode_Char_No_Space ; Skip if not space
+			; MOV InputValue_, '@'
+			; Decode_Char_No_Space:
+			
+			CMP InputValue_, '@' ; if (DL < '@') --> Decode_Char_Invalid
+			JC Decode_Char_Invalid
+			CMP InputValue_, '[' ; if (DL < '[') --> Decode_Char_Valid ('[' is the char after 'Z')
+			JC Decode_Char_Valid
+			
+			CMP InputValue_, 'a' ; if (DL < 'a') --> Decode_Char_Invalid
+			JC Decode_Char_Invalid
+			CMP InputValue_, '{' ; if (DL < '{') --> Decode_Char_ToUpper ('{' is the char after 'z')
+			JC Decode_Char_ToUpper
+			
+			JMP Decode_Char_Invalid ; Otherwise char must be above z and thus invalid
+			
+			Decode_Char_Invalid:
+				CALL Print_NewLine
+				
+				MOV AH, 9 ; Configure to display string
+				LEA DX, DecodeInvalidError_ ; Configure offset
+				INT 21H ; Display an error message
+				
+				JMP Exit ; And then exit
+			
+			Decode_Char_ToUpper:
+				SUB InputValue_, 32 ; Lowercase alphabet is 32 higher than upper
+				JMP Decode_Char_Valid
+			
+			Decode_Char_Valid:
+				SUB InputValue_, '@' ; '@' is zero, 'A' is one, 'B' is two, etc
+				MOV DL, InputValue_ ; Assign InputValue_ to DL
+				
+				CMP DL, InputValueLast_
+				JC Decode_Char_Cycle_Up ; if InputValue_ is less than InputValueLast_ --> Decode_Char_Cycle_Up
+				JMP Decode_Char_Cycle_Up_End ; else skip Decode_Char_Cycle_Up
+				
+				Decode_Char_Cycle_Up: ; Cycle InputValue_ through an alphabet in a loop
+					ADD DL, 27
+					
+					CMP DL, InputValueLast_
+					JC Decode_Char_Cycle_Up ; if InputValue_ is less than InputValueLast_ --> Decode_Char_Cycle_Up (cycle again)
+				
+				Decode_Char_Cycle_Up_End:
+				
+				MOV InputValue_, DL ; Save current value before it is converted into a displayable character
+				SUB DL, InputValueLast_ ; Get difference between the last and current character
+				ADD DL, '@' ; Add '@' Back
+				
+				CMP DL, '@' ; Replace '@' with space
+				JNZ Decode_Char_No_At ; Skip if not '@'
+				MOV DL, ' '
+				Decode_Char_No_At:
+				
+				INT 21h ; Display decoded char
+				
+				MOV DL, InputValue_ ; Update InputValueLast_
+				MOV InputValueLast_, DL
+			
+			INC BX ; Move to next char
+			LOOP DecodeLoop
+		
 		JMP Exit
 	
 	Exit: ; exit to DOS
