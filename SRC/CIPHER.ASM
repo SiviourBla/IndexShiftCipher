@@ -1,4 +1,11 @@
-; A simple cipher
+; /----------
+;  Encoding: UTF-8
+;  License: MIT
+;  Original Author: Blake Siviour
+;  Year: 2022
+;  Project: Index Shift Cipher
+;  Project Summary: A simple cipher written in assembly that runs on MASM
+; \----------
 
 TITLE IndexShiftCipher
 .MODEL SMALL
