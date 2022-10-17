@@ -1,19 +1,24 @@
 ; A simple cipher
 
-TITLE CIPHER
+TITLE IndexShiftCipher
 .MODEL SMALL
 .STACK 100H
 
 
 .DATA
+VersionText_ DB "1.1.0$"
 Mode_ DB 0 ; 0 = Decode, 1 = Encode
-ModePrompt_ DB "[E]ncode/[D]ecode: $"
+ModePrompt_ DB "[E]ncode/[D]ecode/[A]bout: $"
 ModePromptError_ DB "Invalid input!$"
 InputPrompt_ DB "Input: $"
 Input_ DB 51,0,52 dup("$") ; Init input variable with max size of 50
 InputValue_ DB 0 ; Stores current character's value
 InputValueLast_ DB 0 ; Stores last character's value
 DecodeInvalidError_ DB "Failed: invalid characters were present!$"
+AboutTextA_ DB "Index Shift Cipher$"
+AboutTextB_ DB "Version: $"
+AboutTextC_ DB "Author: Blake Siviour$"
+AboutTextD_ DB "Source: https://github.com/SiviourBla/IndexShiftCipher$"
 
 
 .CODE
@@ -49,6 +54,11 @@ MAIN PROC
 		CMP AL, 'd' ; if (AL == 'd') --> PM_Decode
 		JZ PM_Decode
 		
+		CMP AL, 'A' ; if (AL == 'A') --> Display_About
+		JZ Display_About
+		CMP AL, 'a' ; if (AL == 'a') --> Display_About
+		JZ Display_About
+		
 		CALL Print_NewLine
 		
 		MOV AH, 9 ; Configure to display string
@@ -59,6 +69,35 @@ MAIN PROC
 		
 		JMP Prompt_Mode ; Prompt user again
 		
+	Display_About: ; Display info about the program and exit
+		CALL Print_NewLine
+		
+		MOV AH, 9 ; Configure to display string
+		LEA DX, AboutTextA_ ; Configure offset
+		INT 21H ; Print text
+		
+		CALL Print_NewLine
+		
+		MOV AH, 9 ; Configure to display string
+		LEA DX, AboutTextB_ ; Configure offset
+		INT 21H ; Print text
+		
+		LEA DX, VersionText_ ; Configure offset
+		INT 21H ; Print text
+		
+		CALL Print_NewLine
+		
+		MOV AH, 9 ; Configure to display string
+		LEA DX, AboutTextC_ ; Configure offset
+		INT 21H ; Print text
+		
+		CALL Print_NewLine
+		
+		MOV AH, 9 ; Configure to display string
+		LEA DX, AboutTextD_ ; Configure offset
+		INT 21H ; Print text
+		
+		JMP Exit
 	
 	PM_Encode: ; Set Mode_ to Encode/1
 		MOV Mode_, 1
