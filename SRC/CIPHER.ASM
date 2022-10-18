@@ -13,7 +13,7 @@ TITLE IndexShiftCipher
 
 
 .DATA
-VersionText_ DB "1.1.0$"
+VersionText_ DB "1.2.0$"
 Mode_ DB 0 ; 0 = Decode, 1 = Encode
 ModePrompt_ DB "[E]ncode/[D]ecode/[A]bout: $"
 ModePromptError_ DB "Invalid input!$"
@@ -37,6 +37,14 @@ Print_NewLine PROC NEAR ; Print dos newline
 	INT 21h
 	RET 0
 Print_NewLine ENDP
+
+Fix_Decoder_Space PROC NEAR ; Replace spaces in decoder input with '@', using proc due to loop size limitations
+	CMP InputValue_, ' ' ; Replace space with '@'
+	JNZ Decode_Char_No_Space ; Skip if not space
+	MOV InputValue_, '@'
+	Decode_Char_No_Space:
+	RET 0
+Fix_Decoder_Space ENDP
 
 MAIN PROC
 	; Initialise data
@@ -212,11 +220,7 @@ MAIN PROC
 			MOV DL, Input_[BX] ; Get current char
 			MOV InputValue_, DL ; Update current value to eliminate any risks associated with DL getting overwritten
 			
-			; Not enough room to keep this inside the loop
-			; CMP InputValue_, ' ' ; Replace space with '@'
-			; JNZ Decode_Char_No_Space ; Skip if not space
-			; MOV InputValue_, '@'
-			; Decode_Char_No_Space:
+			CALL Fix_Decoder_Space ; Replace space with '@', using call due to loop size limitations
 			
 			CMP InputValue_, '@' ; if (DL < '@') --> Decode_Char_Invalid
 			JC Decode_Char_Invalid
